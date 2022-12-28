@@ -281,9 +281,11 @@ type Declarator struct {
 	Pos lexer.Position
 }
 
-type Type struct {
-	IsConst bool `@"const"?`
+type Struct struct {
+	Fields []*Declarator `"struct" "{" @@ ( "," @@ )* "," "}"`
+}
 
+type Type struct {
 	Struct *Struct `( @@`
 	// must match lexer.go BasicType AND ast.Type
 	Basic string `| @("bool" | "void" | "i8" | "i16" | "i32" | "i64" | "u8" | "u16" | "u32" | "u64" | "f32" | "f64")`
@@ -291,9 +293,7 @@ type Type struct {
 
 	Pointers string `@"*"*`
 
-	Pos lexer.Position
-}
+	Lengths []int `( "[" @Number "]" )*`
 
-type Struct struct {
-	Fields []*Declarator `"struct" "{" @@ ( "," @@ )* "," "}"`
+	Pos lexer.Position
 }

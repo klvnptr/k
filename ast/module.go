@@ -45,7 +45,9 @@ func (m *Module) AddLocalType(alias string, typ *Type) {
 }
 
 func (m *Module) AddGlobal(v *Variable) {
-	m.Globals = append(m.Globals, v)
+	m.Globals = append(m.Globals, &Global{
+		Variable: v,
+	})
 }
 
 func (m *Module) AddLocal(v *Variable) error {
@@ -73,9 +75,9 @@ func (m *Module) FindTypeDefByType(typ *Type) *TypeDef {
 }
 
 func (m *Module) FindVariable(ident string) *Variable {
-	for _, v := range m.Globals {
-		if v.Ident == ident {
-			return v
+	for _, g := range m.Globals {
+		if g.Variable.Ident == ident {
+			return g.Variable
 		}
 	}
 

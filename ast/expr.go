@@ -405,10 +405,6 @@ func (io *IndexOp) Value() (*Value, error) {
 		return nil, err
 	}
 
-	if !expr.Type.IsPointer() {
-		return nil, utils.WithPos(fmt.Errorf("cannot index a non-pointer type"), io.Scope.Current().File, io.Pos)
-	}
-
 	indexExpr, err := io.IndexExpr.Value()
 	if err != nil {
 		return nil, err
@@ -421,21 +417,52 @@ func (io *IndexOp) Value() (*Value, error) {
 
 	bb := io.Scope.BasicBlock()
 
-	ptr := expr.Type.Pointer()
+	if expr.Type.IsPointer() {
+		ptr := expr.Type.Pointer()
 
-	ptrIRType, err := ptr.IRType()
-	if err != nil {
-		return nil, err
+		ptrIRType, err := ptr.IRType()
+		if err != nil {
+			return nil, err
+		}
+
+		addr := bb.NewGetElementPtr(ptrIRType, expr.Value, indexExpr.Value)
+		result := bb.NewLoad(ptrIRType, addr)
+
+		return &Value{
+			Type:  ptr,
+			Ptr:   addr,
+			Value: result,
+		}, nil
+	} else if expr.Type.IsArray() {
+		arr := expr.Type.Array()
+
+		if expr.Ptr == nil {
+			return nil, utils.WithPos(fmt.Errorf("cannot index a non-variable"), io.Scope.Current().File, io.Pos)
+		}
+
+		arrayIRType, err := expr.Type.IRType()
+		if err != nil {
+			return nil, err
+		}
+
+		elemType := arr.Type
+
+		elemIRType, err := elemType.IRType()
+		if err != nil {
+			return nil, err
+		}
+
+		addr := bb.NewGetElementPtr(arrayIRType, expr.Ptr, NewLLInt(32, 0), indexExpr.Value)
+		result := bb.NewLoad(elemIRType, addr)
+
+		return &Value{
+			Type:  elemType,
+			Ptr:   addr,
+			Value: result,
+		}, nil
+	} else {
+		return nil, utils.WithPos(fmt.Errorf("can only index pointers or arrays, but type is %s", expr.Type.String()), io.Scope.Current().File, io.Pos)
 	}
-
-	addr := bb.NewGetElementPtr(ptrIRType, expr.Value, indexExpr.Value)
-	result := bb.NewLoad(ptrIRType, addr)
-
-	return &Value{
-		Type:  ptr,
-		Ptr:   addr,
-		Value: result,
-	}, nil
 }
 
 func (c *CastingOp) String() string {

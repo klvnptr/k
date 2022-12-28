@@ -60,11 +60,10 @@ func (suite *ParserTestSuite) TestString() {
 func (suite *ParserTestSuite) TestDeclarator() {
 	p := parser.BuildParser[parser.Declarator]()
 
-	expr, err := p.ParseString("main.c", "const i32 **n")
+	expr, err := p.ParseString("main.c", "i32 **n")
 	suite.NoError(err)
 	suite.Equal(&parser.Declarator{
 		Type: &parser.Type{
-			IsConst:  true,
 			Basic:    "i32",
 			Pointers: "**",
 			Pos:      lexer.Position{Filename: "main.c", Offset: 0, Line: 1, Column: 1},

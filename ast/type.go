@@ -28,17 +28,9 @@ const (
 	BasicTypeF64 BasicType = "f64"
 )
 
-type StructField struct {
-	Ident string
-	Type  *Type
-}
-
-type StructType struct {
-	Fields []*StructField
-}
-
 type Type struct {
 	_basic   BasicType
+	_array   *ArrayType
 	_struct  *StructType
 	_pointer *Type
 	_alias   string
@@ -69,6 +61,10 @@ func (t *Type) Basic() BasicType {
 	return t.AliasedType()._basic
 }
 
+func (t *Type) Array() *ArrayType {
+	return t.AliasedType()._array
+}
+
 func (t *Type) Struct() *StructType {
 	return t.AliasedType()._struct
 }
@@ -90,6 +86,8 @@ func (t *Type) String() string {
 	// not an alias, so we can just check the type
 	if t.IsBasic() {
 		return string(t.Basic())
+	} else if t.IsArray() {
+		return t.Array().String()
 	} else if t.IsStruct() {
 		return t.Struct().String()
 	} else if t.IsPointer() {
@@ -107,6 +105,8 @@ func (t *Type) IRType() (types.Type, error) {
 
 	var final types.Type
 
+	// we must start with the aliased type, because any other type can be an alias type as well
+	// TODO: do we need this at all?
 	if t.IsAlias() {
 		td := t.Scope.FindTypeDefByAlias(t.Alias())
 
@@ -140,6 +140,19 @@ func (t *Type) IRType() (types.Type, error) {
 		if final == nil {
 			panic("unknown type")
 		}
+	} else if t.IsArray() {
+		at := t.Array()
+
+		if at.Len <= 0 {
+			return nil, utils.WithPos(fmt.Errorf("array length must be greater than 0"), t.Scope.Current().File, t.Pos)
+		}
+
+		et, err := at.Type.IRType()
+		if err != nil {
+			return nil, err
+		}
+
+		final = types.NewArray(uint64(at.Len), et)
 	} else if t.IsStruct() {
 		// check if we already have a type definition for this struct
 		found := t.Scope.FindTypeDefByType(t)
@@ -306,6 +319,10 @@ func (t *Type) IsBasic() bool {
 	return t.Basic() != ""
 }
 
+func (t *Type) IsArray() bool {
+	return t.Array() != nil
+}
+
 func (t *Type) IsStruct() bool {
 	return t.Struct() != nil
 }
@@ -382,6 +399,8 @@ func (t *Type) Equals(o *Type) bool {
 	// here, both are not aliases
 	if t.IsBasic() && o.IsBasic() {
 		return t.Basic() == o.Basic()
+	} else if t.IsArray() && o.IsArray() {
+		return t.Array().Equals(o.Array())
 	} else if t.IsStruct() && o.IsStruct() {
 		return t.Struct().Equals(o.Struct())
 	} else if t.IsPointer() && o.IsPointer() {

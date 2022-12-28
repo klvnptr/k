@@ -8,12 +8,21 @@ import (
 
 // MODULE, FUNCTIONS
 
+type TypeDef struct {
+	Alias string
+	Type  *Type
+}
+
+type Global struct {
+	Variable *Variable
+}
+
 type Module struct {
 	Functions []*Function
 
 	ModuleTypeDefs []*TypeDef
 	LocalTypes     []*TypeDef
-	Globals        []*Variable
+	Globals        []*Global
 
 	Ptr          *ir.Module
 	LastID       int
@@ -21,11 +30,6 @@ type Module struct {
 
 	Scope *Scope
 	Pos   lexer.Position
-}
-
-type TypeDef struct {
-	Alias string
-	Type  *Type
 }
 
 type Function struct {

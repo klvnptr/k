@@ -235,35 +235,35 @@ func (suite *CSuiteSuite) TestCSuite14() {
 	`, "")
 }
 
-// func (suite *CSuiteSuite) TestCSuite15() {
-// 	suite.EqualProgramK(`
-// 	i64
-// 	main()
-// 	{
-// 		i64 arr[2];
+func (suite *CSuiteSuite) TestCSuite15() {
+	suite.EqualProgramK(`
+	i64
+	main()
+	{
+		i64[2] arr;
 
-// 		arr[0] = 1;
-// 		arr[1] = 2;
+		arr[0] = 1;
+		arr[1] = 2;
 
-// 		return arr[0] + arr[1] - 3;
-// 	}
-// 	`, "")
-// }
+		return arr[0] + arr[1] - 3;
+	}
+	`, "")
+}
 
-// func (suite *CSuiteSuite) TestCSuite16() {
-// 	suite.EqualProgramK(`
-// 	i64
-// 	main()
-// 	{
-// 		i64 arr[2];
-// 		i64 *p;
+func (suite *CSuiteSuite) TestCSuite16() {
+	suite.EqualProgramK(`
+	i64
+	main()
+	{
+		i64[2] arr;
+		i64 *p;
 
-// 		p = &arr[1];
-// 		*p = 0;
-// 		return arr[1];
-// 	}
-// 	`, "")
-// }
+		p = &arr[1];
+		*p = 0;
+		return arr[1];
+	}
+	`, "")
+}
 
 func (suite *CSuiteSuite) TestCSuite17() {
 	suite.EqualProgramK(`
@@ -559,13 +559,11 @@ func (suite *CSuiteSuite) TestCSuite31() {
 // https://github.dev/c-testsuite/c-testsuite/blob/master/tests/single-exec/00032.c
 func (suite *CSuiteSuite) TestCSuite32() {
 	suite.EqualProgramK(`
-	i64* malloc(i64 size);
-
 	i64
 	main()
 	{
-		i64 *arr = malloc(sizeof(i64) * 2);
-		i64 *p = arr;
+		i64[2] arr;
+		i64 *p;
 		
 		arr[0] = 2;
 		arr[1] = 3;
@@ -642,7 +640,7 @@ func (suite *CSuiteSuite) TestCSuite35() {
 // 	i64
 // 	main()
 // 	{
-// 		i64 x[2];
+// 		i64[2] x;
 // 		i64 *p;
 
 // 		x[1] = 7;

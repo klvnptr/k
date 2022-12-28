@@ -5,6 +5,15 @@ import (
 	"strings"
 )
 
+type StructField struct {
+	Ident string
+	Type  *Type
+}
+
+type StructType struct {
+	Fields []*StructField
+}
+
 func (st *StructField) String() string {
 	return st.Ident + " " + st.Type.String()
 }

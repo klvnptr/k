@@ -35,3 +35,14 @@ func (t *Type) NewPointer() *Type {
 		Pos:      t.Pos,
 	}
 }
+
+func (t *Type) NewArray(len int) *Type {
+	return &Type{
+		_array: &ArrayType{
+			Type: t,
+			Len:  len,
+		},
+		Scope: t.Scope,
+		Pos:   t.Pos,
+	}
+}
