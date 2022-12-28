@@ -1,0 +1,11 @@
+{
+    "go.lintTool": "golangci-lint",
+    "go.lintOnSave": "workspace",
+    // disable structtag analysis
+    // source: https://github.com/golang/vscode-go/issues/217
+    "gopls": {
+        "analyses": {
+            "structtag": false
+        }
+    },
+}

@@ -1,0 +1,11 @@
+linters:
+  presets:
+    - bugs
+    - unused
+  disable:
+    - deadcode
+    - scopelint
+    - structcheck
+    - varcheck
+    - rowserrcheck
+    - sqlclosecheck
