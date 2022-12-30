@@ -41,7 +41,11 @@ func (b *BinaryOp) Value() (*Value, error) {
 		case "+":
 			result = bb.NewGetElementPtr(ptrIRType, left.Value, right.Value)
 		case "-":
-			result = bb.NewGetElementPtr(ptrIRType, left.Value, right.Value)
+			// multiply the right value by -1
+			negative := bb.NewSub(constant.NewInt(right.Type.LLVMIntType(), 0), right.Value)
+			negative.OverflowFlags = []enum.OverflowFlag{enum.OverflowFlagNSW}
+
+			result = bb.NewGetElementPtr(ptrIRType, left.Value, negative)
 		case "==":
 			ptrInt := bb.NewPtrToInt(left.Value, types.I64)
 			result = bb.NewICmp(enum.IPredEQ, ptrInt, right.Value)
@@ -59,7 +63,7 @@ func (b *BinaryOp) Value() (*Value, error) {
 		case "+":
 			result = bb.NewGetElementPtr(ptrIRType, right.Value, left.Value)
 		case "-":
-			result = bb.NewGetElementPtr(ptrIRType, right.Value, left.Value)
+			return nil, utils.WithPos(fmt.Errorf("cannot subtract a pointer from an integer"), b.Scope.Current().File, b.Pos)
 		case "==":
 			ptrInt := bb.NewPtrToInt(right.Value, types.I64)
 			result = bb.NewICmp(enum.IPredEQ, left.Value, ptrInt)
@@ -502,17 +506,29 @@ func (c *CastingOp) Value() (*Value, error) {
 		return nil, err
 	}
 
-	if c.Type.IsInt() && expr.Type.IsInt() {
-		if c.Type.BasicSize() > expr.Type.BasicSize() {
-			result = c.Scope.BasicBlock().NewSExt(expr.Value, targetIRType)
-		} else {
-			result = c.Scope.BasicBlock().NewTrunc(expr.Value, targetIRType)
+	if c.Type.IsInt() {
+		if expr.Type.IsInt() || expr.Type.IsUInt() {
+			if c.Type.BasicSize() > expr.Type.BasicSize() {
+				result = c.Scope.BasicBlock().NewSExt(expr.Value, targetIRType)
+			} else if c.Type.BasicSize() < expr.Type.BasicSize() {
+				result = c.Scope.BasicBlock().NewTrunc(expr.Value, targetIRType)
+			} else {
+				result = expr.Value
+			}
+		} else if expr.Type.IsFloat() {
+			result = c.Scope.BasicBlock().NewFPToSI(expr.Value, targetIRType)
 		}
-	} else if c.Type.IsUInt() && expr.Type.IsUInt() {
-		if c.Type.BasicSize() > expr.Type.BasicSize() {
-			result = c.Scope.BasicBlock().NewZExt(expr.Value, targetIRType)
-		} else {
-			result = c.Scope.BasicBlock().NewTrunc(expr.Value, targetIRType)
+	} else if c.Type.IsUInt() {
+		if expr.Type.IsInt() || expr.Type.IsUInt() {
+			if c.Type.BasicSize() > expr.Type.BasicSize() {
+				result = c.Scope.BasicBlock().NewZExt(expr.Value, targetIRType)
+			} else if c.Type.BasicSize() < expr.Type.BasicSize() {
+				result = c.Scope.BasicBlock().NewTrunc(expr.Value, targetIRType)
+			} else {
+				result = expr.Value
+			}
+		} else if expr.Type.IsFloat() {
+			result = c.Scope.BasicBlock().NewFPToUI(expr.Value, targetIRType)
 		}
 	} else if c.Type.IsFloat() && expr.Type.IsFloat() {
 		if c.Type.BasicSize() > expr.Type.BasicSize() {
@@ -524,15 +540,22 @@ func (c *CastingOp) Value() (*Value, error) {
 		if expr.Type.IsPointer() {
 			result = c.Scope.BasicBlock().NewBitCast(expr.Value, targetIRType)
 		} else if expr.Type.IsArray() {
-			elemIRType, err := expr.Type.Array().Type.IRType()
+			if expr.Ptr == nil {
+				return nil, utils.WithPos(fmt.Errorf("cannot cast a non-variable array to a pointer"), c.Scope.Current().File, c.Pos)
+			}
+
+			// elemIRType, err := expr.Type.Array().Type.IRType()
+			irType, err := expr.Type.IRType()
 			if err != nil {
 				return nil, err
 			}
-			result = c.Scope.BasicBlock().NewBitCast(expr.Value, types.NewPointer(elemIRType))
-		} else {
-			return nil, utils.WithPos(fmt.Errorf("casting from %s to %s not implemented", expr.Type.String(), c.Type.String()), c.Scope.Current().File, c.Pos)
+
+			result = c.Scope.BasicBlock().NewGetElementPtr(irType, expr.Ptr, NewLLInt(32, 0), NewLLInt(32, 0))
+			// result = c.Scope.BasicBlock().NewBitCast(expr.Value, types.NewPointer(elemIRType))
 		}
-	} else {
+	}
+
+	if result == nil {
 		return nil, utils.WithPos(fmt.Errorf("casting from %s to %s not implemented", expr.Type.String(), c.Type.String()), c.Scope.Current().File, c.Pos)
 	}
 
@@ -576,15 +599,32 @@ func (f *FnCallOp) Value() (*Value, error) {
 }
 
 func (s *SizeOfOp) String() string {
-	return "sizeof(" + s.Type.String() + ")"
+	return "sizeof(" + s.Expr.String() + ")"
 }
 
 func (s *SizeOfOp) Value() (*Value, error) {
 	bb := s.Scope.BasicBlock()
 
-	irType, err := s.Type.IRType()
-	if err != nil {
-		return nil, err
+	var irType types.Type
+
+	if s.Type != nil {
+		var err error
+		irType, err = s.Type.IRType()
+		if err != nil {
+			return nil, err
+		}
+	} else if s.Expr != nil {
+		expr, err := s.Expr.Value()
+		if err != nil {
+			return nil, err
+		}
+
+		irType, err = expr.Type.IRType()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, utils.WithPos(fmt.Errorf("sizeof() needs either an expression or a type"), s.Scope.Current().File, s.Pos)
 	}
 
 	// source: https://stackoverflow.com/questions/14608250/how-can-i-find-the-size-of-a-type

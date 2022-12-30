@@ -94,6 +94,22 @@ func (ce *ComparisonExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
 	}
 }
 
+func (ae *ShiftExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
+	head := ae.Head.Transform(scope)
+
+	for _, tail := range ae.Tail {
+		head = &ast.BinaryOp{
+			Left:  head,
+			Op:    tail.Op,
+			Right: tail.Expr.Transform(scope),
+			Scope: scope,
+			Pos:   tail.Pos,
+		}
+	}
+
+	return head
+}
+
 func (ae *AddExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
 	head := ae.Head.Transform(scope)
 
@@ -209,8 +225,6 @@ func (ie *IndexExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
 
 func (ue *UnaryExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
 	switch {
-	case ue.SizeOfExpr != nil:
-		return ue.SizeOfExpr.Transform(scope)
 	case ue.FnCallExpr != nil:
 		return ue.FnCallExpr.Transform(scope)
 	case ue.PrimaryExpr != nil:
@@ -221,8 +235,23 @@ func (ue *UnaryExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
 }
 
 func (soe *SizeOfExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
+	if soe.Head != nil {
+		return soe.Head.Transform(scope)
+	}
+
+	var typ *ast.Type
+	if soe.Type != nil {
+		typ = soe.Type.Transform(scope)
+	}
+
+	var expr ast.ExpressionLike
+	if soe.Expr != nil {
+		expr = soe.Expr.Transform(scope)
+	}
+
 	return &ast.SizeOfOp{
-		Type:  soe.Type.Transform(scope),
+		Type:  typ,
+		Expr:  expr,
 		Scope: scope,
 		Pos:   soe.Pos,
 	}

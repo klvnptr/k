@@ -1,10 +1,11 @@
-int
-foo(void)
+i64
+// foo(void)
+foo()
 {
 	return 0;
 }
 
-int
+i64
 main()
 {
 	return foo();

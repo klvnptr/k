@@ -81,6 +81,8 @@ func (c *Context) RunProgramK(src string, opts []Option) (string, error) {
 
 	bitCodeStr := bitCode.String()
 
+	// fmt.Println(bitCodeStr)
+
 	srcFilePath := filepath.Join(c.tmpFolder, fmt.Sprintf("%s.ll", basename))
 
 	err = os.WriteFile(srcFilePath, []byte(bitCodeStr), 0600)
@@ -97,7 +99,7 @@ func (c *Context) RunProgramK(src string, opts []Option) (string, error) {
 
 	result, err = c.runBinary(binaryFilePath)
 	if err != nil {
-		return "", NewBinaryRunError(err, src)
+		return "", NewBinaryRunError(err, src, result)
 	}
 
 	return result, nil
@@ -122,7 +124,7 @@ func (c *Context) RunProgramC(src string, opts []Option) (string, error) {
 
 	result, err = c.runBinary(binaryFilePath)
 	if err != nil {
-		return "", NewBinaryRunError(err, src)
+		return "", NewBinaryRunError(err, src, result)
 	}
 
 	return result, nil
@@ -156,7 +158,7 @@ func (c *Context) RunProgramLL(m *ir.Module, opts []Option) (string, error) {
 	result, err = c.runBinary(binaryFilePath)
 
 	if err != nil {
-		return "", NewBinaryRunError(err, src)
+		return "", NewBinaryRunError(err, src, result)
 	}
 
 	return result, nil

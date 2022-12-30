@@ -57,8 +57,14 @@ func (a *AssignStmt) Transform(scope ast.ScopeLike) ast.StatementLike {
 }
 
 func (r *ReturnStmt) Transform(scope ast.ScopeLike) ast.StatementLike {
+	var expr ast.ExpressionLike
+
+	if r.Expr != nil {
+		expr = r.Expr.Transform(scope)
+	}
+
 	return &ast.ReturnStmt{
-		Expr:  r.Expr.Transform(scope),
+		Expr:  expr,
 		Scope: scope,
 		Pos:   r.Pos,
 	}

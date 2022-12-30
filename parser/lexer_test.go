@@ -71,6 +71,45 @@ func (suite *LexerTestSuite) TestSimple() {
 	suite.EqualToken(tokens, "Punct", `}`)
 }
 
+func (suite *LexerTestSuite) TestMultiLineComment() {
+	tokens, err := suite.lexer.LexString("main.c", `
+int main() {
+	/* a
+	aa
+	*/
+	return 0;
+}
+`)
+	suite.NoError(err)
+	// suite.DumpAllTokens(tokens)
+
+	suite.EqualToken(tokens, "Whitespace", `
+`)
+	suite.EqualToken(tokens, "Ident", `int`)
+	suite.EqualToken(tokens, "Whitespace", ` `)
+	suite.EqualToken(tokens, "Ident", `main`)
+	suite.EqualToken(tokens, "Punct", `(`)
+	suite.EqualToken(tokens, "Punct", `)`)
+	suite.EqualToken(tokens, "Whitespace", ` `)
+	suite.EqualToken(tokens, "Punct", `{`)
+	suite.EqualToken(tokens, "Whitespace", `
+	`)
+	suite.EqualToken(tokens, "MultiLineComment", `/* a
+	aa
+	*/`)
+	suite.EqualToken(tokens, "Whitespace", `
+	`)
+	suite.EqualToken(tokens, "Keyword", `return`)
+	suite.EqualToken(tokens, "Whitespace", ` `)
+	suite.EqualToken(tokens, "Number", `0`)
+	suite.EqualToken(tokens, "Punct", `;`)
+	suite.EqualToken(tokens, "Whitespace", `
+`)
+	suite.EqualToken(tokens, "Punct", `}`)
+	suite.EqualToken(tokens, "Whitespace", `
+`)
+}
+
 func (suite *LexerTestSuite) TestString() {
 	tokens, err := suite.lexer.LexString("main.c", `int main() { return "h\"ali" + "hello"; }`)
 	suite.NoError(err)
@@ -159,6 +198,37 @@ func (suite *LexerTestSuite) TestFnCall() {
 	suite.EqualToken(tokens, "Punct", `;`)
 	suite.EqualToken(tokens, "Whitespace", ` `)
 	suite.EqualToken(tokens, "Punct", `}`)
+}
+
+func (suite *LexerTestSuite) TestVoidKeyword() {
+	tokens, err := suite.lexer.LexString("main.c", `
+	void voidfn()
+	{
+		return;
+	}	
+	`)
+	suite.NoError(err)
+	// suite.DumpAllTokens(tokens)
+
+	suite.EqualToken(tokens, "Whitespace", `
+	`)
+	suite.EqualToken(tokens, "BasicType", `void`)
+	suite.EqualToken(tokens, "Whitespace", ` `)
+	suite.EqualToken(tokens, "Ident", `voidfn`)
+	suite.EqualToken(tokens, "Punct", `(`)
+	suite.EqualToken(tokens, "Punct", `)`)
+	suite.EqualToken(tokens, "Whitespace", `
+	`)
+	suite.EqualToken(tokens, "Punct", `{`)
+	suite.EqualToken(tokens, "Whitespace", `
+		`)
+	suite.EqualToken(tokens, "Keyword", `return`)
+	suite.EqualToken(tokens, "Punct", `;`)
+	suite.EqualToken(tokens, "Whitespace", `
+	`)
+	suite.EqualToken(tokens, "Punct", `}`)
+	suite.EqualToken(tokens, "Whitespace", `	
+	`)
 }
 
 func (suite *LexerTestSuite) TestIndexExpr() {

@@ -97,6 +97,11 @@ func (r *ReturnStmt) String() []string {
 }
 
 func (r *ReturnStmt) Generate() error {
+	if r.Expr == nil {
+		r.Scope.BasicBlock().NewRet(nil)
+		return nil
+	}
+
 	val, err := r.Expr.Value()
 
 	if err != nil {

@@ -1,7 +1,7 @@
-int
+i64
 main()
 {
-	if ('a' != 97)
+	if ('a' != (i8)97)
 		return 1;
 		
 	return 0;

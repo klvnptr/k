@@ -14,6 +14,17 @@ type ParserTestSuite struct {
 	parser *parser.Parser
 }
 
+func (suite *ParserTestSuite) ParseExpr(expr string) {
+	p := parser.BuildParser[parser.Expr]()
+	_, err := p.ParseString("main.c", expr)
+	suite.NoError(err)
+}
+
+func (suite *ParserTestSuite) TestSizeOf() {
+	suite.ParseExpr("sizeof(i32)")
+	suite.ParseExpr("sizeof 2")
+}
+
 func (suite *ParserTestSuite) TestSimple() {
 	_, err := suite.parser.ParseString("i32 main() { return 0; }")
 	suite.NoError(err)

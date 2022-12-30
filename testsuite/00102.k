@@ -1,7 +1,7 @@
-int
+i64
 main()
 {
-	int x;
+	i64 x;
 	
 	x = 1;
 	if ((x << 1) != 2)

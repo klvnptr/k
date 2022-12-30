@@ -129,7 +129,7 @@ func (t *Type) IRType() (types.Type, error) {
 			final = NewLLTypeVoid()
 		}
 
-		if t.IsInt() {
+		if t.IsInt() || t.IsUInt() {
 			final = t.LLVMIntType()
 		}
 
@@ -138,7 +138,7 @@ func (t *Type) IRType() (types.Type, error) {
 		}
 
 		if final == nil {
-			panic("unknown type")
+			return nil, utils.WithPos(fmt.Errorf("unknown basic type '%s'", t.Basic()), t.Scope.Current().File, t.Pos)
 		}
 	} else if t.IsArray() {
 		at := t.Array()

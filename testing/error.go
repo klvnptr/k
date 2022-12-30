@@ -55,9 +55,10 @@ func (cre *ClangRunError) Error() string {
 type BinaryRunError struct {
 	Err    error
 	Source string
+	Result string
 }
 
-func NewBinaryRunError(err error, source string) *BinaryRunError {
+func NewBinaryRunError(err error, source, result string) *BinaryRunError {
 	return &BinaryRunError{
 		Err:    err,
 		Source: source,
@@ -65,5 +66,5 @@ func NewBinaryRunError(err error, source string) *BinaryRunError {
 }
 
 func (bre *BinaryRunError) Error() string {
-	return fmt.Sprintf("binary error: %s\nsource:\n%s\n", bre.Err.Error(), bre.Source)
+	return fmt.Sprintf("binary error: %s\nresult:\n%s\nsource:\n%s\n", bre.Err.Error(), bre.Result, bre.Source)
 }

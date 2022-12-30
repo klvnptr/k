@@ -1,6 +1,6 @@
 // line comment
 
-int
+i64
 main()
 {
 	/*

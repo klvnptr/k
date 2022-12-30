@@ -1,11 +1,12 @@
-int
+i64
 main()
 {
-	int arr[2];
-	int *p;
+	[2]i64 arr;
+	i64 *p;
 	
 	p = &arr[0];
-	p += 1;
+	// p += 1;
+	p = p + 1;
 	*p = 123;
 	
 	if(arr[1] != 123)

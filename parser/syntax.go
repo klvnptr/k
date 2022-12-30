@@ -64,7 +64,7 @@ type AssignStmt struct {
 }
 
 type ReturnStmt struct {
-	Expr *Expr `"return" @@ ";"`
+	Expr *Expr `"return" @@? ";"`
 
 	Pos lexer.Position
 }
@@ -139,9 +139,21 @@ type EqualityExpr struct {
 }
 
 type ComparisonExpr struct {
-	Left  *AddExpr        `@@`
+	Left  *ShiftExpr      `@@`
 	Op    string          `[ @("<" "=" | ">" "=" | "<" | ">")`
 	Right *ComparisonExpr `@@ ]`
+
+	Pos lexer.Position
+}
+
+type ShiftExpr struct {
+	Head *AddExpr `@@`
+	Tail []struct {
+		Op   string   `@("<" "<" | ">" ">")`
+		Expr *AddExpr `@@`
+
+		Pos lexer.Position
+	} `@@*`
 
 	Pos lexer.Position
 }
@@ -173,7 +185,16 @@ type MulExpr struct {
 
 type CastingExpr struct {
 	Type *Type       `[ "(" @@ ")" ]`
-	Expr *PrefixExpr `@@`
+	Expr *SizeOfExpr `@@`
+
+	Pos lexer.Position
+}
+
+type SizeOfExpr struct {
+	Head *PrefixExpr `@@`
+
+	Type *Type       `| "sizeof" "(" @@ ")"`
+	Expr *PrefixExpr `| "sizeof" @@`
 
 	Pos lexer.Position
 }
@@ -228,15 +249,9 @@ type IndexExpr struct {
 }
 
 type UnaryExpr struct {
-	SizeOfExpr  *SizeOfExpr  `@@`
-	FnCallExpr  *FnCallExpr  `| @@`
+	// SizeOfExpr  *SizeOfExpr  `@@`
+	FnCallExpr  *FnCallExpr  `@@`
 	PrimaryExpr *PrimaryExpr `| @@`
-
-	Pos lexer.Position
-}
-
-type SizeOfExpr struct {
-	Type *Type `"sizeof" "(" @@ ")"`
 
 	Pos lexer.Position
 }

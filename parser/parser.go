@@ -13,6 +13,7 @@ func BuildParser[T any]() *participle.Parser[T] {
 		participle.Lexer(BuildLexer()),
 		participle.UseLookahead(1024*4),
 		participle.Elide("Whitespace"),
+		participle.Elide("MultiLineComment"),
 		participle.Elide("Comment"),
 	)
 }

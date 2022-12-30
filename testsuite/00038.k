@@ -1,15 +1,16 @@
-int
+i64
 main()
 {
-	int x, *p;
+	i16 x;
+	i16 *p;
 
 	if (sizeof(0) < 2)
 		return 1;
 	if (sizeof 0 < 2)
 		return 1;
-	if (sizeof(char) < 1)
+	if (sizeof(i8) < 1)
 		return 1;
-	if (sizeof(int) - 2 < 0)
+	if (sizeof(i16) - 2 < 0)
 		return 1;
 	if (sizeof(&x) != sizeof p)
 		return 1;

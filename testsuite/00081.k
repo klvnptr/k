@@ -1,7 +1,8 @@
-int
+i64
 main()
 {
-	long long x;
+	// long long x;
+	i64 x;
 	
 	x = 0;
 	x = x + 1;

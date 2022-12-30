@@ -160,5 +160,27 @@ func (f *Function) Generate() error {
 		}
 	}
 
+	returnIRType, err := f.ReturnType.IRType()
+	if err != nil {
+		return err
+	}
+
+	if ret, ok := f.BasicBlock().Term.(*ir.TermRet); ok {
+		// X is nil, if return expression is void (NewRet was call with nil)
+		if ret.X != nil {
+			if f.ReturnType.IsVoid() {
+				return fmt.Errorf("function '%s' must not return a value", f.Name)
+			}
+
+			if !ret.X.Type().Equal(returnIRType) {
+				return fmt.Errorf("function '%s' must return a value of type '%s'", f.Name, f.ReturnType.String())
+			}
+		} else {
+			if !f.ReturnType.IsVoid() {
+				return fmt.Errorf("function '%s' must return a value of type '%s'", f.Name, f.ReturnType.String())
+			}
+		}
+	}
+
 	return nil
 }

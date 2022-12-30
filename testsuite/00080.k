@@ -4,7 +4,7 @@ voidfn()
     return;
 }
 
-int
+i64
 main()
 {
     voidfn();

@@ -180,6 +180,7 @@ type FnCallOp struct {
 
 type SizeOfOp struct {
 	Type *Type
+	Expr ExpressionLike
 
 	Scope ScopeLike
 	Pos   lexer.Position

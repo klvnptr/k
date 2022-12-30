@@ -1,8 +1,8 @@
-int
-foo(int x[100])
+i64
+foo([100]i64 x)
 {
-	int y[100];
-	int *p;
+	[100]i64 y;
+	i64 *p;
 	
 	y[0] = 2000;
 	
@@ -11,37 +11,39 @@ foo(int x[100])
 		return 1;
 	}
 	
-	p = x;
+	p = (i64*)x;
 	
 	if(p[0] != 1000)
 	{
 		return 2;
 	}
 	
-	p = y;
+	p = (i64*)y;
 	
 	if(p[0] != 2000)
 	{
 		return 3;
 	}
 	
-	if(sizeof(x) != sizeof(void*))
-	{
-		return 4;
-	}
-	
-	if(sizeof(y) <= sizeof(x))
-	{
-		return 5;
-	}
+	// sizeof an array in K is the number of bytes allocated for it
+	// if(sizeof(x) != sizeof(void*))
+	// {
+	// 	return 4;
+	// }
+
+	// sizeof an array in K is the number of bytes allocated for it	
+	// if(sizeof(y) <= sizeof(x))
+	// {
+	// 	return 5;
+	// }
 	
 	return 0;
 }
 
-int
+i64
 main()
 {
-	int x[100];
+	[100]i64 x;
 	x[0] = 1000;
 	
 	return foo(x);
