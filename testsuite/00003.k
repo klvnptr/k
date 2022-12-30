@@ -1,7 +1,7 @@
-int
+i64
 main()
 {
-	int x;
+	i64 x;
 	
 	x = 4;
 	return x - 4;

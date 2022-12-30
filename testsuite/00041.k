@@ -1,9 +1,9 @@
-int
+i64
 main() {
-	int n;
-	int t;
-	int c;
-	int p;
+	i64 n;
+	i64 t;
+	i64 c;
+	i64 p;
 
 	c = 0;
 	n = 2;
@@ -16,7 +16,7 @@ main() {
 			t++;
 		}
 		n++;
-		if (p)
+		if (p != 0)
 			c++;
 	}
 	if (c != 669)

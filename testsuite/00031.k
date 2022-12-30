@@ -1,20 +1,20 @@
-int
+i64
 zero()
 {
 	return 0;
 }
 
-int
+i64
 one()
 {
 	return 1;
 }
 
-int
+i64
 main()
 {
-	int x;
-	int y;
+	i64 x;
+	i64 y;
 	
 	x = zero();
 	y = ++x;

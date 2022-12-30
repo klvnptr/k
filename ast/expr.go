@@ -42,6 +42,12 @@ func (b *BinaryOp) Value() (*Value, error) {
 			result = bb.NewGetElementPtr(ptrIRType, left.Value, right.Value)
 		case "-":
 			result = bb.NewGetElementPtr(ptrIRType, left.Value, right.Value)
+		case "==":
+			ptrInt := bb.NewPtrToInt(left.Value, types.I64)
+			result = bb.NewICmp(enum.IPredEQ, ptrInt, right.Value)
+		case "!=":
+			ptrInt := bb.NewPtrToInt(left.Value, types.I64)
+			result = bb.NewICmp(enum.IPredNE, ptrInt, right.Value)
 		}
 	} else if !left.Type.IsPointer() && right.Type.IsPointer() && left.Type.IsInt() {
 		ptrIRType, err := right.Type.Pointer().IRType()
@@ -54,6 +60,12 @@ func (b *BinaryOp) Value() (*Value, error) {
 			result = bb.NewGetElementPtr(ptrIRType, right.Value, left.Value)
 		case "-":
 			result = bb.NewGetElementPtr(ptrIRType, right.Value, left.Value)
+		case "==":
+			ptrInt := bb.NewPtrToInt(right.Value, types.I64)
+			result = bb.NewICmp(enum.IPredEQ, left.Value, ptrInt)
+		case "!=":
+			ptrInt := bb.NewPtrToInt(right.Value, types.I64)
+			result = bb.NewICmp(enum.IPredNE, left.Value, ptrInt)
 		}
 	} else if !left.Type.Equals(right.Type) {
 		return nil, utils.WithPos(fmt.Errorf("incompatible types %s and %s", left.Type.String(), right.Type.String()), b.Scope.Current().File, b.Pos)
@@ -508,8 +520,18 @@ func (c *CastingOp) Value() (*Value, error) {
 		} else {
 			result = c.Scope.BasicBlock().NewFPTrunc(expr.Value, targetIRType)
 		}
-	} else if c.Type.IsPointer() && expr.Type.IsPointer() && c.Type.PointerLevel() == 1 && expr.Type.PointerLevel() == 1 {
-		result = c.Scope.BasicBlock().NewBitCast(expr.Value, targetIRType)
+	} else if c.Type.IsPointer() {
+		if expr.Type.IsPointer() {
+			result = c.Scope.BasicBlock().NewBitCast(expr.Value, targetIRType)
+		} else if expr.Type.IsArray() {
+			elemIRType, err := expr.Type.Array().Type.IRType()
+			if err != nil {
+				return nil, err
+			}
+			result = c.Scope.BasicBlock().NewBitCast(expr.Value, types.NewPointer(elemIRType))
+		} else {
+			return nil, utils.WithPos(fmt.Errorf("casting from %s to %s not implemented", expr.Type.String(), c.Type.String()), c.Scope.Current().File, c.Pos)
+		}
 	} else {
 		return nil, utils.WithPos(fmt.Errorf("casting from %s to %s not implemented", expr.Type.String(), c.Type.String()), c.Scope.Current().File, c.Pos)
 	}

@@ -11,7 +11,7 @@ import (
 func BuildParser[T any]() *participle.Parser[T] {
 	return participle.MustBuild[T](
 		participle.Lexer(BuildLexer()),
-		participle.UseLookahead(1024),
+		participle.UseLookahead(1024*4),
 		participle.Elide("Whitespace"),
 		participle.Elide("Comment"),
 	)

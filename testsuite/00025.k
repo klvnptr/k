@@ -1,9 +1,9 @@
-int strlen(char *);
+i64 strlen(i8* s);
 
-int
+i64
 main()
 {
-	char *p;
+	i8 *p;
 	
 	p = "hello";
 	return strlen(p) - 5;

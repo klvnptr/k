@@ -1,7 +1,7 @@
-int
+i64
 main()
 {
-	int arr[2];
+	[2]i64 arr;
 
 	arr[0] = 1;
 	arr[1] = 2;

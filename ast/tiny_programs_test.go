@@ -1,13 +1,15 @@
 package ast_test
 
 import (
-	"testing"
+	t "testing"
+
+	"github.com/klvnptr/k/testing"
 
 	"github.com/stretchr/testify/suite"
 )
 
 type TinyProgramsTestSuite struct {
-	CompilerSuite
+	testing.CompilerSuite
 }
 
 func (suite *TinyProgramsTestSuite) TestFib() {
@@ -127,6 +129,6 @@ func (suite *TinyProgramsTestSuite) TestBinSearch() {
 	suite.EqualProgramK(src, "4")
 }
 
-func TestTinyProgramsTestSuite(t *testing.T) {
+func TestTinyProgramsTestSuite(t *t.T) {
 	suite.Run(t, new(TinyProgramsTestSuite))
 }

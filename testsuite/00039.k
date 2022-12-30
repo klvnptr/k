@@ -1,13 +1,13 @@
-int
+i64
 main()
 {
-	void *p;
-	int x;
+	i8* p;
+	i64 x;
 	
 	x = 2;
-	p = &x;
+	p = (i8*)&x;
 	
-	if(*((int*)p) != 2)
+	if(*((i64*)p) != 2)
 		return 1;
 	return 0;
 }

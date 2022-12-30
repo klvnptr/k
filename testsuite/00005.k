@@ -1,23 +1,27 @@
-int
+i64
 main()
 {
-	int x;
-	int *p;
-	int **pp;
+	i64 x;
+	i64 *p;
+	i64 **pp;
 
 	x = 0;
 	p = &x;
 	pp = &p;
 
-	if(*p)
+	// if condition expressions require boolean values
+	if(*p != 0)
 		return 1;
-	if(**pp)
+	if(**pp != 0)
 		return 1;
 	else
 		**pp = 1;
 
-	if(x)
+	if(x != 0)
 		return 0;
 	else
 		return 1;
+
+	// return was missing
+	return 1;
 }

@@ -1,13 +1,19 @@
 package ast_test
 
 import (
-	"testing"
+	t "testing"
+
+	"github.com/klvnptr/k/testing"
 
 	"github.com/stretchr/testify/suite"
 )
 
 type SrcTestSuite struct {
-	CompilerSuite
+	testing.CompilerSuite
+}
+
+func (suite *SrcTestSuite) SetupTest() {
+	suite.T().Parallel()
 }
 
 func (suite *SrcTestSuite) TestBasic() {
@@ -39,7 +45,7 @@ func (suite *SrcTestSuite) TestBasicInline() {
 }
 
 func (suite *SrcTestSuite) TestMathInline() {
-	suite.EqualExprK("f64 t = round(10.6);", `"%.2f", t`, "11.00", Declare("f64 round(f64 arg);"))
+	suite.EqualExprK("f64 t = round(10.6);", `"%.2f", t`, "11.00", testing.Declare("f64 round(f64 arg);"))
 }
 
 func (suite *SrcTestSuite) TestBasicInlineC() {
@@ -47,13 +53,13 @@ func (suite *SrcTestSuite) TestBasicInlineC() {
 }
 
 func (suite *SrcTestSuite) TestMathInlineC() {
-	suite.EqualExprC("float t = roundf(10.6f);", `"%.2f", t`, "11.00", Header("math.h"))
+	suite.EqualExprC("float t = roundf(10.6f);", `"%.2f", t`, "11.00", testing.Header("math.h"))
 }
 
 func (suite *SrcTestSuite) TestDoublePrefixC() {
 	suite.ErrorClangExprC(`char *s = "hello"; ++(++s);`, "expression is not assignable")
 
-	suite.EqualExprC(`char *s = "hello";`, `"%s,%s", ++s, ++s`, "ello,llo")
+	suite.EqualExprC(`char *s = "hello"; char *s0 = ++s; char *s1 = ++s;`, `"%s,%s", s0, s1`, "ello,llo")
 	suite.EqualExprK(`i8 *s = "hello";`, `"%s,%s,%s", ++s, ++(++s), s`, "ello,lo,lo")
 
 	suite.EqualExprC(`char *s = "hello"; char *p = s;`, `"%s,%s", p + 2, s`, "llo,hello")
@@ -78,9 +84,9 @@ func (suite *SrcTestSuite) Test1() {
 	suite.EqualExprC(`char *s = "12345";`, `"%s", &s[2]`, "345")
 	suite.EqualExprK(`i8 *s = "12345";`, `"%s", &s[2]`, "345")
 
-	suite.EqualExprC(`char *s = malloc(10); memset(s, 'A', 6); s[2] = 'X'; s[5] = 0;`, `"%s-", s`, "AAXAA-")
+	suite.EqualExprC(`char *s = malloc(10); memset(s, 'A', 6); s[2] = 'X'; s[5] = 0;`, `"%s-", s`, "AAXAA-", testing.Header("stdlib.h"), testing.Header("string.h"))
 	suite.EqualExprK(`i8 *s = malloc(10); memset(s, 'A', 6); s[2] = 'X'; s[5] = (i8)0;`, `"%s-", s`, "AAXAA-",
-		DeclareMalloc(),
+		testing.DeclareMalloc(),
 	)
 
 	suite.EqualExprK(`i8 *s = "12345"; *(s + 1) = 'C';`, `"%s", s`, "1C345")
@@ -91,14 +97,21 @@ func (suite *SrcTestSuite) Test2() {
 	suite.EqualExprC(`char *s = "12345"; char **p = &s;`, `"%c", *(*p + 2)`, "3")
 	suite.EqualExprK(`i8 *s = "12345"; i8 **p = &s;`, `"%c", *(*p + 2)`, "3")
 
-	suite.EqualExprC(`char *s = "12345"; char **p = malloc(sizeof(char*) * 3); p[1] = s;`, `"%c,%c", *(p[1] + 2), p[1][1]`, "3,2")
+	suite.EqualExprC(`char *s = "12345"; char **p = malloc(sizeof(char*) * 3); p[1] = s;`, `"%c,%c", *(p[1] + 2), p[1][1]`, "3,2", testing.Header("stdlib.h"))
+	suite.EqualExprC(`char *s = "12345"; char **p = malloc(sizeof(char*) * 3); p[1] = s;`, `"%c,%c", *(p[1] + 2),(p[1])[1]`, "3,2", testing.Header("stdlib.h"))
+	suite.EqualExprK(`i8 *s = "12345"; i8 **p = malloc(sizeof(i8*) * 3); p[1] = s;`, `"%c,%c", *(p[1] + 2), p[1][1]`, "3,2",
+		testing.Declare("i8** malloc(i64 size);"),
+	)
 	suite.EqualExprK(`i8 *s = "12345"; i8 **p = malloc(sizeof(i8*) * 3); p[1] = s;`, `"%c,%c", *(p[1] + 2), (p[1])[1]`, "3,2",
-		Declare("i8** malloc(i64 size);"),
+		testing.Declare("i8** malloc(i64 size);"),
 	)
 }
 
 func (suite *SrcTestSuite) TestMallocString() {
 	c := `
+#include <stdlib.h>
+#include <stdio.h>
+
 int main() {
 	char *s = malloc(6);
 	s[0] = 'h';
@@ -142,13 +155,13 @@ func (suite *SrcTestSuite) TestEmptyString() {
 }
 
 func (suite *SrcTestSuite) TestAlias0a() {
-	suite.ErrorParseExprK(`hello a = (hello)10; bool d = a == 10;`, "incompatible types hello and i64", Declare("type i64 hello;"))
-	suite.EqualExprK(`hello a = (hello)10; bool d = a == (hello)10;`, `"%d", d`, "1", Declare("type i64 hello;"))
-	suite.EqualExprK(`i64 f = 10; hello g = (hello)10; bool h = f == (i64)g;`, `"%d", h`, "1", Declare("type i64 hello;"), Basename("first"))
+	suite.ErrorGenerateExprK(`hello a = (hello)10; bool d = a == 10;`, "incompatible types hello and i64", testing.Declare("type i64 hello;"))
+	suite.EqualExprK(`hello a = (hello)10; bool d = a == (hello)10;`, `"%d", d`, "1", testing.Declare("type i64 hello;"))
+	suite.EqualExprK(`i64 f = 10; hello g = (hello)10; bool h = f == (i64)g;`, `"%d", h`, "1", testing.Declare("type i64 hello;"), testing.Basename("first"))
 }
 
 func (suite *SrcTestSuite) TestAlias0b() {
-	suite.EqualExprK(`hello a = (hello)20; i8 b = (i8)a; i64 c = (i64)a;`, `"%d,%d,%d", a, b, c`, "20,20,20", Declare("type i32 hello;"), Basename("second"))
+	suite.EqualExprK(`hello a = (hello)20; i8 b = (i8)a; i64 c = (i64)a;`, `"%d,%d,%d", a, b, c`, "20,20,20", testing.Declare("type i32 hello;"), testing.Basename("second"))
 
 }
 
@@ -262,7 +275,7 @@ func (suite *SrcTestSuite) TestAvoidLeftRecursion() {
 	suite.EqualExprK(`i64 x = 2 * 3 * 4;`, `"%d", x`, "24")
 	suite.EqualExprK(`i64 x = 2;`, `"%d", ++++x`, "4")
 	suite.EqualExprK(`i64 x = 10;`, `"%d,%d", x--, x`, "10,9")
-	suite.EqualExprC(`int x = 10;`, `"%d,%d", x--, x`, "10,9")
+	suite.EqualExprC(`int x = 10; int y = x--;`, `"%d,%d", y, x`, "10,9")
 	suite.EqualExprK(`i64 x = 10;`, `"%d,%d", x----, x`, "9,8")
 	suite.ErrorClangExprC(`int x = 10; int b = x----;`, "expression is not assignable")
 
@@ -281,6 +294,6 @@ func (suite *SrcTestSuite) TestAvoidLeftRecursion() {
 	suite.EqualExprC(`int x = 3 - -3;`, `"%d", x`, "6")
 }
 
-func TestSrcTestSuite(t *testing.T) {
+func TestSrcTestSuite(t *t.T) {
 	suite.Run(t, new(SrcTestSuite))
 }

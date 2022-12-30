@@ -1,8 +1,8 @@
-int
+i64
 main()
 {
-	int arr[2];
-	int *p;
+	[2]i64 arr;
+	i64 *p;
 	
 	p = &arr[1];
 	*p = 0;

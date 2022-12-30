@@ -74,7 +74,7 @@ func (suite *ParserTestSuite) TestDeclarator() {
 }
 
 func (suite *ParserTestSuite) TestIndexExpr() {
-	p := parser.BuildParser[parser.PostfixExpr]()
+	p := parser.BuildParser[parser.Expr]()
 
 	expr, err := p.ParseString("main.c", "c[12]")
 	suite.NoError(err)
@@ -93,7 +93,38 @@ func (suite *ParserTestSuite) TestIndexExpr() {
 			Pos:      lexer.Position{Filename: "main.c", Offset: 2, Line: 1, Column: 3},
 		},
 		Scope: &ast.Block{},
-		Pos:   lexer.Position{Filename: "main.c", Offset: 0, Line: 1, Column: 1},
+		Pos:   lexer.Position{Filename: "main.c", Offset: 1, Line: 1, Column: 2},
+	}, transformed)
+
+	p2 := parser.BuildParser[parser.Expr]()
+
+	expr2, err2 := p2.ParseString("main.c", "(c[42])[t]")
+	suite.NoError(err2)
+
+	transformed = expr2.Transform(&ast.Block{})
+
+	suite.Equal(&ast.IndexOp{
+		Expr: &ast.IndexOp{
+			Expr: &ast.LoadOp{
+				Name:  "c",
+				Scope: &ast.Block{},
+				Pos:   lexer.Position{Filename: "main.c", Offset: 1, Line: 1, Column: 2},
+			},
+			IndexExpr: &ast.ConstantNumberOp{
+				Constant: "42",
+				Scope:    &ast.Block{},
+				Pos:      lexer.Position{Filename: "main.c", Offset: 3, Line: 1, Column: 4},
+			},
+			Scope: &ast.Block{},
+			Pos:   lexer.Position{Filename: "main.c", Offset: 2, Line: 1, Column: 3},
+		},
+		IndexExpr: &ast.LoadOp{
+			Name:  "t",
+			Scope: &ast.Block{},
+			Pos:   lexer.Position{Filename: "main.c", Offset: 8, Line: 1, Column: 9},
+		},
+		Scope: &ast.Block{},
+		Pos:   lexer.Position{Filename: "main.c", Offset: 7, Line: 1, Column: 8},
 	}, transformed)
 }
 

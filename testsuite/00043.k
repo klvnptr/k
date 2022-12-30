@@ -1,14 +1,14 @@
-struct s {
-    int x;
+type struct {
+    i64 x,
     struct {
-        int y;
-        int z;
-    } nest;
-};
+        i64 y,
+        i64 z,
+    } nest,
+} s;
 
-int
+i64
 main() {
-    struct s v;
+    s v;
     v.x = 1;
     v.nest.y = 2;
     v.nest.z = 3;

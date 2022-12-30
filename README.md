@@ -4,14 +4,14 @@
 
 K (K-lang) is a strongly-typed, C-like programming language that I am writing to learn how to write a compiler. It is written in Go and uses LLVM as a backend.
 
-All it can do right now is to run bunch of tests. See ```*_test.go``` files in the ```ast``` package folder.
+All it can do right now is to run bunch of tests. See ```ast/*_test.go``` files.
 
 If you want to run the tests, run.
 ```bash
 go test ./...
 ```
 
-One of the goals it to take and adopt as many test cases possible from the standard [c-testsuite](https://github.com/c-testsuite/c-testsuite) and have K pass them. See the ```c_suite_test.go``` file in the ```ast``` package folder.
+One of the goals it to take and adopt as many test cases possible from the standard [c-testsuite](https://github.com/c-testsuite/c-testsuite) and have K pass them. See the runner in ```ast/k_testsuite_test.go``` and the adapted test cases in ```testsuite``` folder.
 
 K (or K-lang) is named after the inital of [Konstruktor](https://konstruktor.online/), a fantastic product engineering team in Budapest, Hungary that I am a part of.
 
@@ -100,9 +100,13 @@ Many todos. Here is a list of some of them:
 - [ ] implement more operators from C
 - [ ] convert operators to head + tail
 - [ ] implement arrays
+  - [X] partially implemented, needs more testing
 - [ ] implement globals
 - [ ] sizeof should accept expressions
 - [ ] struct assign {.a = 1, .b = 2}
+- [ ] continue, break
+- [ ] for loop
+- [ ] +=, -=, *=, /=
 
 ## Useful Resources
 

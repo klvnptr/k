@@ -1,10 +1,11 @@
-int
+i64
 main()
 {
-	int x;
+	i64 x;
 
 	x = 50;
-	while (x)
+	// condition expression must be a boolean
+	while (x != 0)
 		x = x - 1;
 	return x;
 }

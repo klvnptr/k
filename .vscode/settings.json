@@ -8,4 +8,7 @@
             "structtag": false
         }
     },
+    "files.associations": {
+        "*.k": "c",
+    }
 }

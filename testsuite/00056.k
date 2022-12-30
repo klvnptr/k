@@ -1,15 +1,18 @@
-#include <stdio.h>
+// #include <stdio.h>
+i8 printf(i8* f, ...);
 
-int main() 
+i64 main() 
 {
-   int a;
+   i64 a;
    a = 42;
    printf("%d\n", a);
 
-   int b = 64;
+   i64 b = 64;
    printf("%d\n", b);
 
-   int c = 12, d = 34;
+   // int c = 12, d = 34;
+   i64 c = 12;
+   i64 d = 34;
    printf("%d, %d\n", c, d);
 
    return 0;

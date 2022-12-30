@@ -217,8 +217,12 @@ type AccessorExpr struct {
 }
 
 type IndexExpr struct {
-	Expr  *UnaryExpr `@@`
-	Index *Expr      `( '[' @@ ']' )?`
+	Head *UnaryExpr `@@`
+	Tail []struct {
+		Index *Expr `'[' @@ ']'`
+
+		Pos lexer.Position
+	} `@@*`
 
 	Pos lexer.Position
 }
@@ -286,14 +290,14 @@ type Struct struct {
 }
 
 type Type struct {
+	Lengths []int `( "[" @Number "]" )*`
+
 	Struct *Struct `( @@`
 	// must match lexer.go BasicType AND ast.Type
 	Basic string `| @("bool" | "void" | "i8" | "i16" | "i32" | "i64" | "u8" | "u16" | "u32" | "u64" | "f32" | "f64")`
 	Alias string `| @Ident )`
 
 	Pointers string `@"*"*`
-
-	Lengths []int `( "[" @Number "]" )*`
 
 	Pos lexer.Position
 }

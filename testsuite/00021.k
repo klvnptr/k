@@ -1,10 +1,10 @@
-int
-foo(int a, int b)
+i64
+foo(i64 a, i64 b)
 {
 	return 2 + a - b;
 }
 
-int
+i64
 main()
 {
 	return foo(1, 3);

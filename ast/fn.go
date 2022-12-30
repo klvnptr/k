@@ -139,7 +139,7 @@ func (f *Function) Generate() error {
 	}
 
 	// add entry block
-	entry := f.Ptr.NewBlock("")
+	entry := f.Ptr.NewBlock("fn.entry")
 	f.SetBasicBlock(entry)
 
 	// initialize params

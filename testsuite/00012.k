@@ -1,4 +1,4 @@
-int
+i64
 main()
 {
 	return (2 + 2) * 2 - 8;

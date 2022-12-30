@@ -1,8 +1,9 @@
-int
+i8
 main()
 {
-	char *p;
+	i8 *p;
 	
 	p = "hello";
-	return p[0] - 104;
+	// cannot implicitly cast i64 to i8
+	return p[0] - (i8)104;
 }

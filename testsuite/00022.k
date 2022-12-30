@@ -1,10 +1,11 @@
-typedef int x;
+type i64 x;
 
-int
+i64
 main()
 {
 	x v;
-	v = 0;
+	// K is strongly-typed, so implicit casting of i64 to x is not allowed
+	v = (x)0;
 	return v;
 }
 

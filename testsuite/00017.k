@@ -1,7 +1,7 @@
-int
+i64
 main()
 {
-	struct { int x; int y; } s;
+	struct { i64 x, i64 y, } s;
 	
 	s.x = 3;
 	s.y = 5;

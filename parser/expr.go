@@ -193,18 +193,18 @@ func (ae *AccessorExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
 }
 
 func (ie *IndexExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {
-	expr := ie.Expr.Transform(scope)
+	head := ie.Head.Transform(scope)
 
-	if ie.Index != nil {
-		return &ast.IndexOp{
-			Expr:      expr,
-			IndexExpr: ie.Index.Transform(scope),
+	for _, tail := range ie.Tail {
+		head = &ast.IndexOp{
+			Expr:      head,
+			IndexExpr: tail.Index.Transform(scope),
 			Scope:     scope,
-			Pos:       ie.Pos,
+			Pos:       tail.Pos,
 		}
 	}
 
-	return expr
+	return head
 }
 
 func (ue *UnaryExpr) Transform(scope ast.ScopeLike) ast.ExpressionLike {

@@ -1,10 +1,10 @@
-int
+i64
 f()
 {
 	return 100;
 }
 
-int
+i64
 main()
 {
 	if (f() > 1000)

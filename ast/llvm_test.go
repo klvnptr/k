@@ -1,9 +1,10 @@
 package ast_test
 
 import (
-	"testing"
+	t "testing"
 
 	"github.com/klvnptr/k/ast"
+	"github.com/klvnptr/k/testing"
 	"github.com/llir/llvm/ir"
 	"github.com/llir/llvm/ir/constant"
 	"github.com/llir/llvm/ir/enum"
@@ -12,14 +13,17 @@ import (
 )
 
 type LlvmTestSuite struct {
-	CompilerSuite
+	testing.CompilerSuite
+}
+
+func (suite *LlvmTestSuite) SetupTest() {
+	suite.T().Parallel()
 }
 
 func (suite *LlvmTestSuite) TestGen() {
 	i32 := ast.NewLLTypeInt(32)
 
 	m := ir.NewModule()
-	m.TargetTriple = "arm64-apple-macosx12.0.0"
 
 	format := m.NewGlobalDef("fmt", constant.NewCharArrayFromString("fib(%d) = %d\x00"))
 
@@ -77,7 +81,6 @@ func (suite *LlvmTestSuite) TestAlias() {
 	i32 := ast.NewLLTypeInt(32)
 
 	m := ir.NewModule()
-	m.TargetTriple = "arm64-apple-macosx12.0.0"
 
 	format := m.NewGlobalDef("fmt", constant.NewCharArrayFromString("out: %d\x00"))
 
@@ -103,6 +106,6 @@ func (suite *LlvmTestSuite) TestAlias() {
 	suite.EqualLL(m, "out: 42")
 }
 
-func TestLlvmTestSuite(t *testing.T) {
+func TestLlvmTestSuite(t *t.T) {
 	suite.Run(t, new(LlvmTestSuite))
 }
